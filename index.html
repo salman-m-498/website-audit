@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website Audit</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--mute:#5c6675;--line:#dde1e7;--acc:#0a5cff;--accink:#fff;--g:#0b7a3b;--a:#a85a00;--r:#b42318}
+@media (prefers-color-scheme:dark){:root{--bg:#10131a;--card:#181c25;--ink:#e8ebf0;--mute:#98a2b3;--line:#2b3140;--acc:#5b8cff;--accink:#0b1020;--g:#4cc38a;--a:#f0a43c;--r:#ff7b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;margin:14px 0 6px}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit}
+button{padding:9px 14px;border-radius:7px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+button.p{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+input:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+details summary{cursor:pointer;color:var(--mute);margin-top:10px}
+.small{font-size:12.5px;color:var(--mute)}
+#steps{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 16px;font-size:14px}
+#steps li span{display:inline-block;width:20px}
+.scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.sc{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.sc b{display:block;font-size:28px;line-height:1.1}.sc small{color:var(--mute)}
+.g{color:var(--g)}.a{color:var(--a)}.r{color:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{width:34%;color:var(--mute);font-weight:500}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;border:1px solid var(--line);margin:0 4px 4px 0}
+.f{border-left:4px solid var(--line);padding:6px 10px;margin:0 0 8px;background:var(--bg);border-radius:0 6px 6px 0}
+.f.high{border-color:var(--r)}.f.med{border-color:var(--a)}.f.low{border-color:var(--acc)}.f.good{border-color:var(--g)}
+.f b{display:block}
+img.shot{max-width:200px;border:1px solid var(--line);border-radius:8px}
+.rep-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:14px}
+@media print{
+  :root{--bg:#fff;--card:#fff;--ink:#111;--mute:#555;--line:#ccc;--g:#0b7a3b;--a:#a85a00;--r:#b42318;--acc:#0a5cff}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .noprint{display:none!important}
+  main{max-width:none;padding:0}.card{break-inside:avoid;border-color:#ccc}
+  @page{margin:14mm}
+}
+</style>
+</head>
+<body>
+<main>
+<section class="noprint">
+  <h1>Website Audit</h1>
+  <p class="sub">Enter a client's web address. It checks speed, accessibility, SEO, security, domain, hosting and technology, then builds a PDF report. All free data sources.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label for="url">Client website address</label><input id="url" placeholder="example.com" autocomplete="off"></div>
+      <div><label for="by">Prepared by (optional)</label><input id="by" placeholder="Your company name"></div>
+      <div><label for="key">Google PageSpeed API key (free, recommended)</label><input id="key" type="password" autocomplete="off"></div>
+    </div>
+    <p class="small">Without a key, Google's shared free quota often returns "429" and the speed test fails. Get a free key: Google Cloud Console, create a project, enable "PageSpeed Insights API", then Credentials, Create API key. No billing needed.</p>
+    <details>
+      <summary>Advanced</summary>
+      <div class="grid" style="margin-top:10px">
+        <div style="grid-column:1/-1"><label for="proxy">CORS proxies for reading the page, tried in order, separated by spaces ({url} is replaced)</label><input id="proxy" value="https://api.allorigins.win/raw?url={url} https://corsproxy.io/?url={url} https://api.codetabs.com/v1/proxy?quest={url}"></div>
+      </div>
+      <p class="small">Free public proxies are often blocked or rate limited (an HTTP 401 or 403 means that). For reliable results, host your own proxy (a free Cloudflare Worker takes five minutes) and put its address first. The proxy is only needed for on-page checks such as titles and headings; speed, accessibility, SEO score and technology detection work without it.</p>
+    </details>
+    <div class="row"><button id="go" class="p">Run audit</button><button id="pdf" disabled>Download PDF</button></div>
+    <ul id="steps"></ul>
+    <p id="msg" class="small"></p>
+  </div>
+</section>
+<div id="report"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+try { $('key').value = localStorage.getItem('sa_key') || ''; } catch (e) {}
+const STEPS = [['psi', 'Speed, accessibility, SEO (Lighthouse)'], ['dns', 'DNS and email records'], ['rdap', 'Domain registration'], ['host', 'Hosting location'], ['page', 'Page content and tech'], ['hist', 'Site history']];
+$('steps').innerHTML = STEPS.map(s => `<li id="st-${s[0]}"><span>·</span>${s[1]}</li>`).join('');
+const mark = (id, ok) => { const el = $('st-' + id); el.firstChild.textContent = ok === null ? '…' : ok ? '✓' : '✗'; };
+
+async function jget(url, opts = {}, ms = 25000) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { ...opts, signal: c.signal }); if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; } return r; }
+  finally { clearTimeout(t); }
+}
+function parseTarget(v) {
+  v = v.trim(); if (!v) throw new Error('Enter a website address.');
+  if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+  const u = new URL(v); const parts = u.hostname.replace(/^www\./, '').split('.');
+  const two = /^(co|com|org|net|gov|ac|edu|or|ne)$/i.test(parts[parts.length - 2] || '') && parts[parts.length - 1].length === 2;
+  const domain = parts.slice(two ? -3 : -2).join('.');
+  return { url: u.origin + (u.pathname === '/' ? '/' : u.pathname), host: u.hostname, domain };
+}
+
+// ---------- data collectors ----------
+async function getPSI(url, strategy) {
+  const p = new URLSearchParams({ url, strategy });
+  ['performance', 'accessibility', 'seo', 'best-practices'].forEach(c => p.append('category', c));
+  const key = $('key').value.trim(); if (key) p.set('key', key);
+  for (let a = 0; a < 3; a++) {
+    try { return await (await jget('https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' + p, {}, 120000)).json(); }
+    catch (e) { if (a === 2 || (e.status && e.status !== 429 && e.status < 500)) throw e; await new Promise(r => setTimeout(r, 7000 * (a + 1))); }
+  }
+}
+function psiDigest(d) {
+  const lr = d.lighthouseResult, a = lr.audits, c = lr.categories, out = { scores: {}, issues: {}, m: {} };
+  for (const k in c) out.scores[k] = Math.round((c[k].score || 0) * 100);
+  const g = id => a[id] && a[id].displayValue;
+  out.m = { 'First Contentful Paint': g('first-contentful-paint'), 'Largest Contentful Paint': g('largest-contentful-paint'), 'Total Blocking Time': g('total-blocking-time'), 'Cumulative Layout Shift': g('cumulative-layout-shift'), 'Speed Index': g('speed-index') };
+  out.lcp = a['largest-contentful-paint'] && a['largest-contentful-paint'].numericValue;
+  out.weight = a['total-byte-weight'] && a['total-byte-weight'].numericValue;
+  const net = a['network-requests'] && a['network-requests'].details && a['network-requests'].details.items || [];
+  out.reqs = net.length; out.urls = net.map(i => i.url);
+  for (const k in c) out.issues[k] = c[k].auditRefs.map(r => ({ r, au: a[r.id] })).filter(x => x.au && x.au.score !== null && x.au.score < 0.9 && ['binary', 'numeric', 'metricSavings'].includes(x.au.scoreDisplayMode) && x.r.weight > 0)
+    .sort((x, y) => y.r.weight - x.r.weight).slice(0, 8).map(x => ({ t: x.au.title, v: x.au.displayValue || '' }));
+  out.sec = ['is-on-https', 'has-hsts', 'csp-xss', 'clickjacking-mitigation', 'origin-isolation'].filter(i => a[i] && a[i].score !== null && a[i].scoreDisplayMode !== 'notApplicable').map(i => ({ t: a[i].title, ok: a[i].score === 1 }));
+  out.shot = a['final-screenshot'] && a['final-screenshot'].details && a['final-screenshot'].details.data;
+  out.stacks = (lr.stackPacks || []).map(s => s.title);
+  const f = d.loadingExperience; out.field = f && f.overall_category ? f.overall_category : null;
+  out.final = lr.finalDisplayedUrl || lr.finalUrl;
+  return out;
+}
+async function doh(name, type) { try { const j = await (await jget(`https://dns.google/resolve?name=${encodeURIComponent(name)}&type=${type}`, {}, 10000)).json(); return (j.Answer || []).map(x => x.data.replace(/^"|"$/g, '')); } catch (e) { return []; } }
+async function getDNS(t) {
+  const [A, AAAA, NS, MX, TXT, CAA, DM] = await Promise.all(['A', 'AAAA', 'NS', 'MX', 'TXT', 'CAA'].map(x => doh(t.host, x)).concat([doh('_dmarc.' + t.domain, 'TXT')]));
+  const root = t.host === t.domain ? { NS, MX, TXT } : { NS: await doh(t.domain, 'NS'), MX: await doh(t.domain, 'MX'), TXT: await doh(t.domain, 'TXT') };
+  if (!A.length && !AAAA.length) throw new Error('No DNS records found');
+  return { A, AAAA, CAA, DM, ...root };
+}
+async function getRDAP(domain) {
+  const j = await (await jget('https://rdap.org/domain/' + domain, { headers: { Accept: 'application/rdap+json' } }, 15000)).json();
+  const ev = n => (j.events || []).find(e => e.eventAction === n);
+  const reg = (j.entities || []).find(e => (e.roles || []).includes('registrar'));
+  let rname = ''; if (reg && reg.vcardArray) { const fn = reg.vcardArray[1].find(x => x[0] === 'fn'); rname = fn ? fn[3] : ''; }
+  return { registrar: rname, created: ev('registration') && ev('registration').eventDate, expires: ev('expiration') && ev('expiration').eventDate, changed: ev('last changed') && ev('last changed').eventDate, status: j.status || [], ns: (j.nameservers || []).map(n => n.ldhName.toLowerCase()) };
+}
+async function getIP(ip) { const j = await (await jget('https://ipwho.is/' + ip, {}, 10000)).json(); if (!j.success) throw new Error('IP lookup failed'); return { ip, org: (j.connection && (j.connection.org || j.connection.isp)) || '', asn: j.connection && j.connection.asn, country: j.country, city: j.city }; }
+let goodProxy = 0;
+async function px(url) {
+  const list = $('proxy').value.split(/\s+/).filter(x => x.includes('{url}')); let last;
+  for (let i = 0; i < list.length; i++) {
+    const t = list[(goodProxy + i) % list.length];
+    try { const r = await jget(t.replace('{url}', encodeURIComponent(url)), {}, 20000); goodProxy = (goodProxy + i) % list.length; return r; } catch (e) { last = e; }
+  }
+  throw last || new Error('No proxy set');
+}
+async function getPage(url) {
+  const r = await px(url), html = await r.text();
+  const hdr = ['server', 'x-powered-by', 'x-generator', 'via'].map(h => r.headers.get(h)).filter(Boolean).join(' ');
+  const [robots, sitemap] = await Promise.all([px(new URL('/robots.txt', url)).then(x => x.text()).catch(() => ''), px(new URL('/sitemap.xml', url)).then(x => x.text()).catch(() => '')]);
+  return { html, hdr, robots: /user-agent/i.test(robots) ? robots : '', sitemap: /<urlset|<sitemapindex/i.test(sitemap) };
+}
+async function getHist(domain) {
+  const d = s => s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8);
+  try {
+    const q = l => jget(`https://web.archive.org/cdx/search/cdx?url=${domain}&output=json&fl=timestamp&limit=${l}`, {}, 15000).then(r => r.json());
+    const [first, last] = await Promise.all([q(1), q(-1)]);
+    if (first.length < 2) return null;
+    return { first: d(first[1][0]), last: d(last[last.length - 1][0]) };
+  } catch (e) {
+    const av = ts => jget(`https://archive.org/wayback/available?url=${domain}${ts ? '&timestamp=' + ts : ''}`, {}, 15000).then(r => r.json()).then(j => j.archived_snapshots && j.archived_snapshots.closest && j.archived_snapshots.closest.timestamp);
+    const [f, l] = await Promise.all([av('19960101'), av('')]);
+    return f ? { first: d(f), last: d(l || f) } : null;
+  }
+}
+
+// ---------- analysis ----------
+const SIGS = [
+  ['WordPress', 'CMS', /wp-content|wp-includes|wp-json/i], ['Shopify', 'E-commerce platform', /cdn\.shopify\.com|myshopify\.com|Shopify\.theme|shopify-section/i],
+  ['WooCommerce', 'E-commerce platform', /woocommerce|wc-ajax|wc_add_to_cart/i], ['Magento', 'E-commerce platform', /Magento_|\/static\/version\d+\/frontend|mage\/cookies/i],
+  ['BigCommerce', 'E-commerce platform', /bigcommerce\.com|bc-sf-filter/i], ['PrestaShop', 'E-commerce platform', /prestashop|\/modules\/ps_/i],
+  ['OpenCart', 'E-commerce platform', /catalog\/view\/theme|route=product\/product/i], ['Wix', 'Site builder', /wixstatic\.com|parastorage\.com|wix\.com/i],
+  ['Squarespace', 'Site builder', /squarespace\.com|static1\.squarespace|sqs-/i], ['Webflow', 'Site builder', /webflow\.(com|io)|data-wf-page/i],
+  ['GoDaddy Website Builder', 'Site builder', /img1\.wsimg\.com|godaddysites\.com/i], ['Weebly', 'Site builder', /weebly\.com|editmysite\.com/i],
+  ['Framer', 'Site builder', /framerusercontent\.com/i], ['Joomla', 'CMS', /\/media\/jui\/|com_content|joomla/i], ['Drupal', 'CMS', /drupal-settings-json|\/sites\/default\/files/i],
+  ['Next.js', 'Framework', /_next\/static|__NEXT_DATA__/i], ['React', 'Framework', /react(\.production|-dom)|data-reactroot/i], ['Vue / Nuxt', 'Framework', /vue(\.runtime)?(\.min)?\.js|__NUXT__/i],
+  ['Angular', 'Framework', /ng-version|angular(\.min)?\.js/i], ['jQuery', 'Library', /jquery/i], ['Bootstrap', 'Library', /bootstrap/i],
+  ['Elementor', 'Page builder', /elementor/i], ['Divi', 'Page builder', /et_pb_|et-boc/i],
+  ['Google Analytics', 'Analytics', /googletagmanager\.com\/gtag|google-analytics\.com|G-[A-Z0-9]{6,}/i], ['Google Tag Manager', 'Analytics', /googletagmanager\.com\/gtm|GTM-[A-Z0-9]+/i],
+  ['Meta Pixel', 'Marketing', /fbevents\.js|fbq\(/i], ['Hotjar', 'Analytics', /hotjar/i], ['Cloudflare', 'CDN', /cdn-cgi|cloudflare/i]
+];
+function detect(text, stacks, ipOrg) {
+  const found = SIGS.filter(s => s[2].test(text)).map(s => ({ name: s[0], cat: s[1] }));
+  (stacks || []).forEach(s => { if (!found.some(f => f.name.toLowerCase() === s.toLowerCase())) found.push({ name: s, cat: 'Detected by Lighthouse' }); });
+  if (/cloudflare/i.test(ipOrg || '') && !found.some(f => f.name === 'Cloudflare')) found.push({ name: 'Cloudflare', cat: 'CDN' });
+  return found;
+}
+function ecom(found, text) {
+  const n = found.map(f => f.name), hit = ['Shopify', 'WooCommerce', 'Magento', 'BigCommerce', 'PrestaShop', 'OpenCart'].find(x => n.includes(x));
+  if (hit) return { v: hit, conf: 'High confidence', k: 1 };
+  if (n.includes('Wix') && /wixstores|wix-stores|wix-ecommerce/i.test(text)) return { v: 'Wix Stores', conf: 'Medium confidence', k: 1 };
+  if (n.includes('Squarespace') && /sqs-add-to-cart|sqs-commerce/i.test(text)) return { v: 'Squarespace Commerce', conf: 'Medium confidence', k: 1 };
+  if (/add[-_ ]to[-_ ]cart|\/checkout|\/cart\b|product-price|"@type":\s*"Product"/i.test(text)) return { v: 'Likely a custom e-commerce build (no known platform matched)', conf: 'Medium confidence', k: 1 };
+  return { v: 'No e-commerce detected', conf: '', k: 0 };
+}
+function onPage(html, url) {
+  const d = new DOMParser().parseFromString(html, 'text/html'), q = s => d.querySelector(s), m = n => (q(`meta[name="${n}"]`) || {}).content || '';
+  const imgs = [...d.querySelectorAll('img')], host = new URL(url).hostname, links = [...d.querySelectorAll('a[href]')];
+  let internal = 0, external = 0; links.forEach(a => { try { const h = new URL(a.getAttribute('href'), url); if (!/^https?:/.test(h.protocol)) return; h.hostname === host ? internal++ : external++; } catch (e) {} });
+  const soc = {}; links.forEach(a => { const h = a.getAttribute('href') || ''; [['Facebook', /facebook\.com/], ['Instagram', /instagram\.com/], ['LinkedIn', /linkedin\.com/], ['X / Twitter', /(twitter|x)\.com/], ['YouTube', /youtube\.com/], ['TikTok', /tiktok\.com/]].forEach(([n, re]) => { if (!soc[n] && /^https?:/.test(h) && re.test(h) && !/share|intent/.test(h)) soc[n] = h; }); });
+  const years = [...(d.body ? d.body.textContent : '').matchAll(/(?:©|&copy;|copyright)\s*(?:\d{4}\s*[-–]\s*)?((?:19|20)\d{2})/gi)].map(x => +x[1]);
+  const schema = [...d.querySelectorAll('script[type="application/ld+json"]')].map(s => { try { const j = JSON.parse(s.textContent); return [].concat(j['@graph'] || j).map(x => x['@type']).flat().filter(Boolean); } catch (e) { return []; } }).flat();
+  return { title: d.title || '', desc: m('description'), h1: d.querySelectorAll('h1').length, h2: d.querySelectorAll('h2').length, canon: (q('link[rel="canonical"]') || {}).href || '', og: !!q('meta[property="og:title"]'), lang: d.documentElement.lang || '',
+    viewport: !!q('meta[name="viewport"]'), noindex: /noindex/i.test(m('robots')), imgs: imgs.length, noAlt: imgs.filter(i => !i.hasAttribute('alt')).length, words: ((d.body && d.body.textContent) || '').trim().split(/\s+/).length,
+    internal, external, schema: [...new Set(schema)].slice(0, 6), year: years.length ? Math.max(...years) : 0, soc, emails: [...new Set([...html.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi)].map(x => x[0].toLowerCase()).filter(e => !/\.(png|jpe?g|gif|svg|webp)$|sentry|wixpress|example\./.test(e)))].slice(0, 3),
+    phones: [...new Set([...d.querySelectorAll('a[href^="tel:"]')].map(a => a.getAttribute('href').slice(4)))].slice(0, 3) };
+}
+const daysTo = s => s ? Math.round((new Date(s) - new Date()) / 864e5) : null;
+const fmt = s => s ? new Date(s).toISOString().slice(0, 10) : '';
+const cls = n => n >= 90 ? 'g' : n >= 50 ? 'a' : 'r';
+
+function findings(D) {
+  const F = [], add = (sev, t, d) => F.push({ sev, t, d }), mo = D.psi && D.psi.mobile, de = D.psi && D.psi.desktop, p = D.page, r = D.rdap;
+  if (mo) {
+    const s = mo.scores;
+    if (s.performance < 50) add('high', 'Slow on mobile phones', `Mobile speed score is ${s.performance}/100. Slow sites lose visitors and rank lower in Google.`);
+    else if (s.performance < 90) add('med', 'Mobile speed can improve', `Mobile speed score is ${s.performance}/100.`);
+    else add('good', 'Fast on mobile', `Mobile speed score is ${s.performance}/100.`);
+    if (mo.lcp > 4000) add('high', 'Main content loads slowly', `The largest element takes about ${(mo.lcp / 1000).toFixed(1)} seconds to appear. Google recommends under 2.5 seconds.`);
+    if (s.accessibility < 70) add('high', 'Accessibility problems', `Accessibility score is ${s.accessibility}/100. This can exclude visitors and carry legal risk in some regions.`);
+    else if (s.accessibility < 90) add('med', 'Some accessibility gaps', `Accessibility score is ${s.accessibility}/100.`);
+    if (s.seo < 80) add('med', 'SEO basics missing', `Technical SEO score is ${s.seo}/100, so search engines may struggle to understand the site.`);
+    if (mo.weight > 3e6) add('med', 'Heavy pages', `The page transfers about ${(mo.weight / 1e6).toFixed(1)} MB. Large images and scripts slow it down.`);
+    if (mo.sec.some(x => x.t && /HTTPS/i.test(x.t) && !x.ok)) add('high', 'Not fully secure (HTTPS)', 'Browsers warn visitors about sites without HTTPS, which hurts trust and rankings.');
+  }
+  if (r && r.expires) { const d = daysTo(r.expires); if (d < 0) add('high', 'Domain has expired', `Expired on ${fmt(r.expires)}.`); else if (d < 90) add('high', 'Domain expires soon', `Expires in ${d} days (${fmt(r.expires)}). Confirm auto-renew and who controls the account.`); else if (d < 180) add('med', 'Domain renewal coming up', `Expires on ${fmt(r.expires)}.`); }
+  if (D.dns) { const sp = D.dns.TXT.some(x => /v=spf1/i.test(x)), dm = D.dns.DM.some(x => /v=DMARC1/i.test(x)), hasMX = D.dns.MX.length;
+    if (hasMX && !sp) add('med', 'No SPF email record', 'Email from this domain is easier to spoof and more likely to land in spam.');
+    if (hasMX && !dm) add('med', 'No DMARC email policy', 'Without DMARC, anyone can send email pretending to be this business.'); }
+  if (p) { const o = p.on;
+    if (o) { if (!o.viewport) add('high', 'Not mobile friendly', 'The page has no mobile viewport setting, so it may display poorly on phones.');
+      if (!o.desc) add('med', 'Missing meta description', 'Search results show a random snippet instead of a written summary.');
+      if (!o.title || o.title.length < 15 || o.title.length > 65) add('low', 'Page title needs work', `Current title: "${o.title || 'none'}". Aim for 30 to 60 characters with the main keyword.`);
+      if (o.h1 !== 1) add('low', o.h1 ? 'Multiple main headings' : 'No main heading (H1)', 'Each page should have one clear H1.');
+      if (o.noAlt) add('low', 'Images missing alt text', `${o.noAlt} of ${o.imgs} images have no alt text.`);
+      if (o.year && o.year <= new Date().getFullYear() - 3) add('med', 'Looks out of date', `The footer says ${o.year}, which can make visitors doubt the business is active.`);
+      if (o.noindex) add('high', 'Hidden from Google', 'The page is set to "noindex", so search engines are told not to list it.'); }
+    if (!p.sitemap) add('low', 'No sitemap.xml found', 'A sitemap helps Google discover all pages.');
+    if (!/G-|gtag|GTM-|googletagmanager|google-analytics/i.test(p.text)) add('med', 'No analytics detected', 'The site may not be measuring visitors or leads.'); }
+  const bld = D.tech && D.tech.find(t => t.cat === 'Site builder');
+  if (bld) add('low', `Built on ${bld.name}`, 'Site builders limit speed tuning, custom features and SEO control. A custom or CMS build can remove those limits.');
+  if (D.hist) add('good', 'Established online presence', `The domain has been archived since ${D.hist.first.slice(0, 4)}.`);
+  const order = { high: 0, med: 1, low: 2, good: 3 }; return F.sort((a, b) => order[a.sev] - order[b.sev]);
+}
+
+// ---------- render ----------
+const row = (k, v) => v === '' || v == null ? '' : `<tr><th>${esc(k)}</th><td>${v}</td></tr>`;
+const sec = (t, b) => `<div class="card"><h2>${esc(t)}</h2>${b}</div>`;
+const unavailable = what => `<p class="small">${esc(what)} could not be retrieved automatically. Check it manually or retry.</p>`;
+function scoreBoxes(s, title) { return `<h3>${title}</h3><div class="scores">${[['performance', 'Performance'], ['accessibility', 'Accessibility'], ['seo', 'SEO'], ['best-practices', 'Best practices']].map(([k, l]) => `<div class="sc"><b class="${cls(s[k])}">${s[k]}</b><small>${l}</small></div>`).join('')}</div>`; }
+function issueList(m, d, k) { const a = (m && m.issues[k]) || []; return a.length ? `<ul>${a.map(x => `<li>${esc(x.t)}${x.v ? ` <span class="small">(${esc(x.v)})</span>` : ''}</li>`).join('')}</ul>` : '<p class="small">No major issues found.</p>'; }
+
+function render(D) {
+  const mo = D.psi && D.psi.mobile, de = D.psi && D.psi.desktop, F = findings(D);
+  let h = `<div class="rep-head"><div><h1 style="font-size:26px">Website Audit Report</h1><div>${esc(D.t.host)}</div></div><div class="small" style="text-align:right">${new Date().toISOString().slice(0, 10)}${$('by').value.trim() ? '<br>Prepared by ' + esc($('by').value.trim()) : ''}</div></div>`;
+  h += sec('Summary', (mo ? scoreBoxes(mo.scores, 'Mobile') : '') + (de ? scoreBoxes(de.scores, 'Desktop') : '') + (!mo && !de ? unavailable('Speed, accessibility and SEO scores') : '') + (mo && mo.shot ? `<h3>How the site looks on mobile</h3><img class="shot" alt="Mobile screenshot" src="${esc(mo.shot)}">` : '') + (mo && mo.field ? `<p class="small">Real visitor experience (Chrome data): <b>${esc(mo.field.replace(/_/g, ' ').toLowerCase())}</b></p>` : ''));
+  h += sec('Key findings', F.length ? F.map(f => `<div class="f ${f.sev}"><b>${esc(f.t)}</b>${esc(f.d)}</div>`).join('') : '<p>No findings.</p>');
+  const tech = D.tech || [];
+  h += sec('Technology and platform', (D.tech ? `<table>${row('E-commerce', D.ecom ? `<b>${esc(D.ecom.v)}</b> <span class="small">${esc(D.ecom.conf)}</span>` : '')}${['CMS', 'Site builder', 'E-commerce platform', 'Framework', 'Page builder', 'Library', 'Analytics', 'Marketing', 'CDN', 'Detected by Lighthouse'].map(c => { const n = tech.filter(t => t.cat === c).map(t => `<span class="tag">${esc(t.name)}</span>`).join(''); return row(c === 'E-commerce platform' ? 'Store platform' : c, n); }).join('')}${row('Server', esc(D.page && D.page.hdr))}</table>${tech.length ? '' : '<p class="small">No known technologies matched.</p>'}` : unavailable('Technology detection')) + (!D.page ? '<p class="small">Detection used network requests only, because the page could not be read directly.</p>' : ''));
+  const r = D.rdap, dn = D.dns, ip = D.ip;
+  h += sec('Domain registration', r ? `<table>${row('Domain', esc(D.t.domain))}${row('Registrar', esc(r.registrar))}${row('Registered', fmt(r.created))}${row('Expires', r.expires ? `${fmt(r.expires)} <span class="small">(${daysTo(r.expires)} days)</span>` : '')}${row('Last changed', fmt(r.changed))}${row('Status', esc((r.status || []).join(', ')))}${row('Nameservers', esc((r.ns || []).join(', ')))}</table>` : unavailable('Registry data for this domain extension (some country registries do not offer free lookups)') + `<p class="small">Look it up on <a href="https://who.is/whois/${encodeURIComponent(D.t.domain)}">who.is</a>.</p>`);
+  const mx = dn && dn.MX.map(x => x.split(' ').pop().toLowerCase()).join(', '), mxp = mx ? (/google|gmail/.test(mx) ? 'Google Workspace' : /outlook|microsoft/.test(mx) ? 'Microsoft 365' : /zoho/.test(mx) ? 'Zoho Mail' : '') : '';
+  h += sec('Hosting, DNS and email', (ip || dn) ? `<table>${row('IP address', esc(ip ? ip.ip : dn && dn.A[0]))}${row('Hosting provider', esc(ip && ip.org))}${row('Server location', esc(ip && [ip.city, ip.country].filter(Boolean).join(', ')))}${row('Nameservers', esc(dn && dn.NS.join(', ').toLowerCase()))}${row('Mail servers', esc(mx) + (mxp ? ` <span class="tag">${mxp}</span>` : ''))}${row('SPF record', dn ? (dn.TXT.some(x => /v=spf1/i.test(x)) ? 'Present' : '<span class="r">Missing</span>') : '')}${row('DMARC policy', dn ? (dn.DM.some(x => /v=DMARC1/i.test(x)) ? 'Present' : '<span class="r">Missing</span>') : '')}${row('IPv6', dn ? (dn.AAAA.length ? 'Yes' : 'No') : '')}</table>` : unavailable('Hosting and DNS data'));
+  if (mo) h += sec('Performance details', `<table>${Object.entries(mo.m).map(([k, v]) => row(k + ' (mobile)', esc(v))).join('')}${row('Page weight', mo.weight ? (mo.weight / 1e6).toFixed(2) + ' MB' : '')}${row('Network requests', mo.reqs)}</table><h3>Biggest speed issues (mobile)</h3>${issueList(mo, de, 'performance')}${de ? `<h3>Desktop</h3>${issueList(de, de, 'performance')}` : ''}`);
+  if (mo) h += sec('Accessibility', `<p class="small">Automated checks catch roughly a third of accessibility problems. A manual review is still recommended.</p>${issueList(mo, de, 'accessibility')}`);
+  const o = D.page && D.page.on;
+  h += sec('SEO', `${mo ? `<h3>Technical SEO issues</h3>${issueList(mo, de, 'seo')}` : ''}${o ? `<h3>On-page details</h3><table>${row('Title', esc(o.title) + ` <span class="small">(${o.title.length} chars)</span>`)}${row('Meta description', o.desc ? esc(o.desc) : '<span class="r">Missing</span>')}${row('Headings', `${o.h1} H1, ${o.h2} H2`)}${row('Word count', o.words)}${row('Images without alt text', `${o.noAlt} of ${o.imgs}`)}${row('Links', `${o.internal} internal, ${o.external} external`)}${row('Canonical tag', o.canon ? 'Yes' : 'No')}${row('Social sharing tags', o.og ? 'Yes' : 'No')}${row('Structured data', o.schema.length ? esc(o.schema.join(', ')) : 'None found')}${row('Language', esc(o.lang))}${row('robots.txt', D.page.robots ? 'Found' : 'Not found')}${row('sitemap.xml', D.page.sitemap ? 'Found' : 'Not found')}</table>` : '<p class="small">On-page checks need the page to be readable through the proxy.</p>'}<h3>Keyword rankings</h3><p class="small">Exact keyword rankings need Google Search Console access or a paid rank tracker. Quick manual checks: <a href="https://www.google.com/search?q=site:${encodeURIComponent(D.t.domain)}">pages Google has indexed</a> and <a href="https://www.google.com/search?q=${encodeURIComponent(D.t.domain.split('.')[0])}">search for the business name</a>.</p>`);
+  if (mo && mo.sec.length) h += sec('Security', `<table>${mo.sec.map(s => row(s.t, s.ok ? '<span class="g">Pass</span>' : '<span class="r">Needs attention</span>')).join('')}</table>`);
+  h += sec('Contact details and social profiles found', o ? `<table>${row('Emails', esc(o.emails.join(', ')))}${row('Phones', esc(o.phones.join(', ')))}${Object.entries(o.soc).map(([k, v]) => row(k, `<a href="${esc(v)}">${esc(v.replace(/^https?:\/\/(www\.)?/, '').slice(0, 50))}</a>`)).join('')}</table>${!o.emails.length && !o.phones.length && !Object.keys(o.soc).length ? '<p class="small">None found on the home page.</p>' : ''}` : unavailable('Contact details'));
+  if (D.hist) h += sec('Site history', `<table>${row('First archived', D.hist.first)}${row('Most recent archive', D.hist.last)}</table><p class="small">From the Internet Archive.</p>`);
+  h += `<p class="small">Report generated automatically from public data. Scores come from Google Lighthouse and can vary between runs. Findings are indicators, not guarantees.</p>`;
+  $('report').innerHTML = h;
+}
+
+// ---------- run ----------
+async function run() {
+  let t; try { t = parseTarget($('url').value); } catch (e) { $('msg').textContent = e.message; return; }
+  try { localStorage.setItem('sa_key', $('key').value.trim()); } catch (e) {}
+  $('go').disabled = true; $('pdf').disabled = true; $('msg').textContent = 'Running. The speed test takes 30 to 90 seconds.'; $('report').innerHTML = '';
+  STEPS.forEach(s => mark(s[0], null));
+  const D = { t }, errs = [];
+  const task = async (id, fn) => { try { const v = await fn(); mark(id, true); return v; } catch (e) { mark(id, false); const st = e.status; errs.push(id === 'psi' && st === 429 ? 'Speed test: Google quota used up. Add a free PageSpeed API key above and run again.' : id === 'psi' && (st === 400 || st === 403) ? 'Speed test: the API key was rejected. Check the key and that PageSpeed Insights API is enabled.' : id === 'page' ? 'Page read: all proxies were blocked (' + (e.message || e) + '). Host your own proxy and put it first under Advanced.' : id + ': ' + (e.message || e)); return null; } };
+  const psiTask = task('psi', async () => { let m = null, d = null, err; try { m = psiDigest(await getPSI(t.url, 'mobile')); } catch (e) { err = e; if (e.status === 429) throw e; } try { d = psiDigest(await getPSI(t.url, 'desktop')); } catch (e) { err = err || e; } if (!m && !d) throw err; return { mobile: m, desktop: d }; });
+  const dnsTask = task('dns', () => getDNS(t));
+  const rdapTask = task('rdap', () => getRDAP(t.domain));
+  const pageTask = task('page', () => getPage(t.url));
+  const histTask = task('hist', () => getHist(t.domain));
+  D.dns = await dnsTask; D.ip = await task('host', async () => { if (!D.dns || !D.dns.A[0]) throw new Error('No IP'); return getIP(D.dns.A[0]); });
+  D.rdap = await rdapTask; D.hist = await histTask; D.psi = await psiTask;
+  const pg = await pageTask;
+  if (pg) { pg.on = onPage(pg.html, t.url); pg.text = pg.html + ' ' + pg.hdr; D.page = pg; }
+  const mo = D.psi && (D.psi.mobile || D.psi.desktop), blob = (pg ? pg.text : '') + ' ' + (mo ? mo.urls.join(' ') : '');
+  if (pg || mo) { D.tech = detect(blob, mo && mo.stacks, D.ip && D.ip.org); D.ecom = ecom(D.tech, blob); }
+  D.psi = D.psi && { mobile: D.psi.mobile, desktop: D.psi.desktop };
+  render(D);
+  $('msg').textContent = errs.length ? 'Done, but some checks failed. ' + errs.join(' ') : 'Done. Review the report below, then download the PDF.';
+  $('go').disabled = false; $('pdf').disabled = false;
+}
+$('go').onclick = run;
+$('url').addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+$('pdf').onclick = () => { const old = document.title; document.title = 'Website Audit - ' + (($('url').value || 'report').replace(/^https?:\/\//, '').replace(/\W+/g, '-')); window.print(); document.title = old; };
+</script>
+</body>
+</html>
